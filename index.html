@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프롬프트 업그레이드 실습실</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================
+   기본 설정 — 흰 배경, 검정 글자, 시니어 가독성
+   ============================ */
+:root {
+  --bg:       #ffffff;
+  --surface:  #f5f7fa;
+  --surface2: #eef1f6;
+  --border:   #d0d7e3;
+  --border2:  #b0baca;
+  --text:     #111111;
+  --text-sub: #333333;
+  --text-muted: #555555;
+  --accent1:  #1a6ef5;   /* 파랑  */
+  --accent2:  #d97706;   /* 주황  */
+  --accent3:  #059669;   /* 초록  */
+  --accent4:  #dc2626;   /* 빨강  */
+  --accent5:  #7c3aed;   /* 보라  */
+  --lv1: #dc2626;
+  --lv2: #ea580c;
+  --lv3: #d97706;
+  --lv4: #059669;
+  --lv5: #1a6ef5;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #ffffff;
+  color: #111111;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  font-size: 17px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================
+   HERO
+   ============================ */
+.hero {
+  background: #1a1e2e;
+  color: #ffffff;
+  padding: 56px 32px 48px;
+  text-align: center;
+  border-bottom: 5px solid var(--accent1);
+}
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,.15);
+  border: 2px solid rgba(255,255,255,.4);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 6px 18px;
+  border-radius: 30px;
+  margin-bottom: 22px;
+}
+.hero h1 {
+  font-family: 'Noto Serif KR', 'Noto Sans KR', sans-serif;
+  font-size: clamp(26px, 4vw, 46px);
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 14px;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+.hero h1 em {
+  color: #60aeff;
+  font-style: normal;
+}
+.hero-sub {
+  font-size: 16px;
+  color: rgba(255,255,255,.8);
+  max-width: 560px;
+  margin: 0 auto 10px;
+  line-height: 1.7;
+}
+.hero-credit {
+  font-size: 13px;
+  color: rgba(255,255,255,.55);
+  margin-top: 14px;
+  letter-spacing: 0.3px;
+}
+
+/* 공식 바 */
+.formula-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 28px;
+}
+.fp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 2px solid;
+}
+.fp-p  { background:#fff1f2; border-color:#fca5a5; color:#b91c1c; }
+.fp-c  { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
+.fp-t  { background:#f0fdf4; border-color:#86efac; color:#166534; }
+.fp-c2 { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
+.fp-fs { background:#faf5ff; border-color:#c4b5fd; color:#5b21b6; }
+.fp-plus { font-size:18px; font-weight:900; color:rgba(255,255,255,.5); display:flex; align-items:center; }
+
+/* ============================
+   NAV
+   ============================ */
+.nav-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: #ffffff;
+  border-bottom: 3px solid #1a6ef5;
+  box-shadow: 0 2px 10px rgba(0,0,0,.1);
+}
+.nav-tabs {
+  display: flex;
+  max-width: 1100px;
+  margin: 0 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display:none; }
+.nav-tab {
+  flex-shrink: 0;
+  padding: 16px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #555555;
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 4px solid transparent;
+  transition: all .2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.nav-tab:hover { color: #111111; background: #f5f7fa; }
+.nav-tab.active { color: #1a6ef5; border-bottom-color: #1a6ef5; background: #eff6ff; }
+
+/* ============================
+   LAYOUT
+   ============================ */
+.page-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+.section { display:none; }
+.section.active { display:block; }
+
+/* ============================
+   섹션 헤더
+   ============================ */
+.section-header { margin-bottom: 32px; }
+
+.audience-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 2px solid;
+  margin-bottom: 14px;
+}
+.badge-job    { background:#fff1f2; border-color:#fca5a5; color:#b91c1c; }
+.badge-biz    { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
+.badge-worker { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
+
+.section-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: #111111;
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+.section-desc {
+  font-size: 16px;
+  color: #555555;
+  line-height: 1.7;
+}
+
+/* ============================
+   시나리오 박스
+   ============================ */
+.scenario-box {
+  background: #fffbeb;
+  border: 2px solid #fcd34d;
+  border-left: 6px solid #d97706;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+}
+.scenario-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #92400e;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.scenario-text {
+  font-size: 16px;
+  color: #111111;
+  line-height: 1.8;
+}
+
+/* ============================
+   레벨 카드
+   ============================ */
+.levels-grid { display:flex; flex-direction:column; gap:18px; }
+
+.level-card {
+  background: #ffffff;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow .2s, border-color .2s;
+}
+.level-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+
+.level-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  cursor: pointer;
+  user-select: none;
+  background: #f5f7fa;
+}
+.level-header:hover { background: #eef1f6; }
+
+.level-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 900;
+  flex-shrink: 0;
+  border: 2px solid;
+}
+.lv1 .level-badge { background:#fff1f2; border-color:#fca5a5; color:#b91c1c; }
+.lv2 .level-badge { background:#fff7ed; border-color:#fdba74; color:#c2410c; }
+.lv3 .level-badge { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
+.lv4 .level-badge { background:#f0fdf4; border-color:#86efac; color:#166534; }
+.lv5 .level-badge { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
+
+.lv1 { border-color: #fca5a5; }
+.lv2 { border-color: #fdba74; }
+.lv3 { border-color: #fcd34d; }
+.lv4 { border-color: #86efac; }
+.lv5 { border-color: #93c5fd; }
+
+.level-meta { flex:1; }
+.level-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 4px;
+}
+.level-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+.tech-tag {
+  background: #eef1f6;
+  border: 1px solid #d0d7e3;
+  border-radius: 5px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555555;
+}
+.level-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.stars { font-size: 16px; letter-spacing: 1px; }
+.revision-hint { font-size: 12px; color: #888888; }
+.toggle-icon { color: #aaaaaa; font-size: 16px; transition: transform .25s; flex-shrink:0; }
+.level-card.open .toggle-icon { transform: rotate(180deg); }
+
+.level-body {
+  display: none;
+  padding: 0 22px 24px;
+  border-top: 2px solid var(--border);
+}
+.level-card.open .level-body { display:block; }
+
+/* ============================
+   문제 박스
+   ============================ */
+.problem-box {
+  margin: 16px 0;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+.problem-bad  { background:#fff1f2; border:2px solid #fca5a5; }
+.problem-warn { background:#fffbeb; border:2px solid #fcd34d; }
+.problem-ok   { background:#f0fdf4; border:2px solid #86efac; }
+.problem-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 8px;
+}
+.problem-list { padding-left: 20px; }
+.problem-list li { margin-bottom: 4px; color: #333333; font-size: 15px; }
+
+/* ============================
+   프롬프트 블록
+   ============================ */
+.prompt-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #888888;
+  text-transform: uppercase;
+  margin: 20px 0 8px;
+}
+.prompt-box {
+  background: #1a1e2e;
+  border: 2px solid #2d3348;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.prompt-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #232840;
+  border-bottom: 1px solid #2d3348;
+}
+.prompt-dots { display:flex; gap:6px; }
+.dot { width:10px; height:10px; border-radius:50%; }
+.dot-r { background:#ff5f57; }
+.dot-y { background:#febc2e; }
+.dot-g { background:#28c840; }
+.prompt-lang { font-size:12px; color:#aaaacc; font-family:monospace; }
+.copy-btn {
+  background: #2d3348;
+  border: 1px solid #3d4560;
+  color: #aaaacc;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+}
+.copy-btn:hover { background:#1a6ef5; border-color:#1a6ef5; color:#ffffff; }
+.copy-btn.copied { background:#059669; border-color:#059669; color:#ffffff; }
+
+.prompt-content {
+  padding: 18px 20px;
+  font-family: 'Fira Code', 'Consolas', 'D2Coding', monospace;
+  font-size: 14px;
+  line-height: 2;
+  color: #d0d8f0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+/* 요소별 색상 — 어두운 배경에서 명확하게 */
+.pc { color: #ff8099; font-weight:700; }   /* Persona */
+.cc { color: #ffd080; font-weight:700; }   /* Context */
+.tc { color: #80ffb8; font-weight:700; }   /* Task */
+.fc { color: #80b8ff; font-weight:700; }   /* Format */
+.sc { color: #c4a0ff; font-weight:700; }   /* Shot */
+.nc { color: #ff6060; }                    /* Bad */
+
+/* ============================
+   비교 테이블
+   ============================ */
+.compare-wrap {
+  background: #ffffff;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.compare-title {
+  padding: 16px 24px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #111111;
+  border-bottom: 2px solid var(--border);
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.compare-table { width:100%; border-collapse:collapse; font-size:15px; }
+.compare-table th {
+  padding: 12px 18px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #555555;
+  border-bottom: 2px solid var(--border);
+  background: #f5f7fa;
+}
+.compare-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #eef1f6;
+  vertical-align: middle;
+  color: #222222;
+  font-size: 15px;
+}
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table tr:hover td { background: #f5f7fa; }
+
+.lv-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  border: 2px solid;
+}
+.chip1 { background:#fff1f2; border-color:#fca5a5; color:#b91c1c; }
+.chip2 { background:#fff7ed; border-color:#fdba74; color:#c2410c; }
+.chip3 { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
+.chip4 { background:#f0fdf4; border-color:#86efac; color:#166534; }
+.chip5 { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
+
+.quality-bar-wrap { display:flex; align-items:center; gap:10px; }
+.quality-bar { height:10px; border-radius:5px; flex:1; background:#eef1f6; max-width:120px; }
+.quality-fill { height:100%; border-radius:5px; }
+
+/* ============================
+   이론 카드
+   ============================ */
+.theory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+  gap: 16px;
+  margin: 28px 0 36px;
+}
+.theory-card {
+  background: #ffffff;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 18px;
+  transition: box-shadow .2s;
+}
+.theory-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+.theory-icon { font-size: 28px; margin-bottom: 10px; }
+.theory-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #888888;
+  margin-bottom: 6px;
+}
+.theory-name { font-size: 17px; font-weight: 800; color:#111111; margin-bottom:8px; }
+.theory-desc { font-size: 14px; color: #444444; line-height: 1.7; }
+
+/* ============================
+   인사이트 카드
+   ============================ */
+.insight-grid { display:grid; gap:14px; margin-top:28px; }
+.insight-card {
+  background: #f5f7fa;
+  border: 2px solid var(--border);
+  border-left: 6px solid;
+  border-radius: 12px;
+  padding: 18px 22px;
+}
+.insight-card strong { font-size: 16px; font-weight: 800; color:#111111; display:block; margin-bottom:6px; }
+.insight-card p { font-size: 15px; color:#333333; line-height:1.7; }
+
+/* ============================
+   실습존
+   ============================ */
+.practice-zone {
+  background: #f5f7fa;
+  border: 2px solid #93c5fd;
+  border-radius: 16px;
+  padding: 32px 28px;
+}
+.practice-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #111111;
+  margin-bottom: 8px;
+}
+.practice-desc { font-size: 16px; color: #444444; margin-bottom: 24px; line-height:1.7; }
+
+.practice-tasks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.task-card {
+  background: #ffffff;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.task-card:hover { border-color: #1a6ef5; background:#eff6ff; }
+.task-card.selected { border-color: #1a6ef5; background:#eff6ff; box-shadow: 0 0 0 3px rgba(26,110,245,.15); }
+.task-icon { font-size: 24px; margin-bottom: 8px; }
+.task-name { font-size: 16px; font-weight: 800; color:#111111; margin-bottom: 4px; }
+.task-hint { font-size: 13px; color: #666666; line-height:1.6; }
+
+.practice-editor {
+  background: #1a1e2e;
+  border: 2px solid #2d3348;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.editor-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #232840;
+  border-bottom: 1px solid #2d3348;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.editor-topic-label { font-size: 14px; font-weight: 700; color: #aaaacc; }
+.editor-actions { display:flex; gap:8px; }
+.editor-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid;
+  transition: all .2s;
+  font-family: inherit;
+}
+.btn-clear { background:#2d3348; border-color:#3d4560; color:#aaaacc; }
+.btn-clear:hover { border-color:#dc2626; color:#ff8080; }
+.btn-check { background:#1a6ef5; border-color:#1a6ef5; color:#ffffff; }
+.btn-check:hover { background:#1558d0; }
+
+.editor-textarea {
+  width: 100%;
+  padding: 18px 20px;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: vertical;
+  font-family: 'Fira Code', 'Consolas', 'D2Coding', monospace;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #d0d8f0;
+  min-height: 200px;
+}
+.editor-textarea::placeholder { color: #4a5070; }
+
+.feedback-bar {
+  padding: 14px 20px;
+  border-top: 1px solid #2d3348;
+  display: none;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  background: #1e2338;
+}
+.feedback-bar.show { display:flex; }
+.fb-item { display:flex; align-items:center; gap:7px; font-size:14px; }
+.fb-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.fb-found   { background:#059669; }
+.fb-missing { background:#dc2626; }
+
+.checklist-box {
+  margin-top: 20px;
+  padding: 18px 22px;
+  background: #ffffff;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+}
+.checklist-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #555555;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+  gap: 10px;
+}
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+  color: #333333;
+  line-height: 1.5;
+}
+.ci-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+/* ============================
+   반응형
+   ============================ */
+@media (max-width: 640px) {
+  .hero { padding: 36px 18px 36px; }
+  .page-wrap { padding: 24px 14px 60px; }
+  .level-header { padding: 14px 14px; gap:10px; }
+  .level-body { padding: 0 14px 18px; }
+  .compare-table th, .compare-table td { padding: 10px 12px; font-size:13px; }
+  .formula-bar { gap:4px; }
+  .fp { padding:8px 10px; font-size:12px; }
+  .fp-plus { display:none; }
+  .theory-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== HERO ========== -->
+<header class="hero">
+  <div class="hero-badge">🎓 AI 워커 훈련소 · 프롬프트 실습 교재</div>
+  <h1>AI에게 <em>정확하게</em><br>일 시키는 기술</h1>
+  <p class="hero-sub">P-C-T-C 공식으로 프롬프트를 단계적으로 업그레이드하는<br>실전 훈련 교재 — 취업희망자 · 자영업자 · 직장인</p>
+  <p class="hero-credit">제작 : AI강사 백민경</p>
+  <div class="formula-bar">
+    <div class="fp fp-p">🎭 P <span style="font-weight:400">역할</span></div>
+    <div class="fp-plus">＋</div>
+    <div class="fp fp-c">🌐 C <span style="font-weight:400">배경</span></div>
+    <div class="fp-plus">＋</div>
+    <div class="fp fp-t">🎯 T <span style="font-weight:400">임무</span></div>
+    <div class="fp-plus">＋</div>
+    <div class="fp fp-c2">📐 C <span style="font-weight:400">조건</span></div>
+    <div class="fp-plus">＋</div>
+    <div class="fp fp-fs">💡 FS <span style="font-weight:400">예시</span></div>
+  </div>
+</header>
+
+<!-- ========== NAV ========== -->
+<nav class="nav-wrap">
+  <div class="nav-tabs">
+    <button class="nav-tab active"  onclick="showTab('theory',this)">📖 공식 이해</button>
+    <button class="nav-tab"         onclick="showTab('job',this)">💼 취업희망자</button>
+    <button class="nav-tab"         onclick="showTab('biz',this)">🏪 자영업자</button>
+    <button class="nav-tab"         onclick="showTab('worker',this)">🧑‍💻 직장인</button>
+    <button class="nav-tab"         onclick="showTab('compare',this)">📊 전체 비교</button>
+    <button class="nav-tab"         onclick="showTab('practice',this)">✏️ 셀프 실습</button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+<!-- ========================
+     TAB: THEORY
+     ======================== -->
+<section class="section active" id="tab-theory">
+  <div class="section-header">
+    <div class="section-title">🧩 P-C-T-C 공식과 5단계 업그레이드 전략</div>
+    <div class="section-desc">좋은 프롬프트는 한 번에 완성되지 않습니다. 5단계를 거쳐 점진적으로 완성됩니다.</div>
+  </div>
+
+  <div class="theory-grid">
+    <div class="theory-card" style="border-color:#fca5a5">
+      <div class="theory-icon">🎭</div>
+      <div class="theory-label" style="color:#b91c1c">P — Persona</div>
+      <div class="theory-name">역할 정의</div>
+      <div class="theory-desc">AI에게 어떤 전문가로 답변할지 명확히 지정합니다. 역할이 바뀌면 답변의 수준과 관점이 완전히 달라집니다.</div>
+    </div>
+    <div class="theory-card" style="border-color:#fcd34d">
+      <div class="theory-icon">🌐</div>
+      <div class="theory-label" style="color:#92400e">C — Context</div>
+      <div class="theory-name">배경 상황</div>
+      <div class="theory-desc">AI는 당신의 상황을 모릅니다. 왜 이 작업이 필요한지, 목표가 무엇인지, 대상이 누구인지 설명해야 합니다.</div>
+    </div>
+    <div class="theory-card" style="border-color:#86efac">
+      <div class="theory-icon">🎯</div>
+      <div class="theory-label" style="color:#166534">T — Task</div>
+      <div class="theory-name">구체적 임무</div>
+      <div class="theory-desc">"써줘"가 아닌 "작성해줘 / 분석해줘 / 요약해줘"처럼 단일하고 명확한 행동 동사로 지시합니다.</div>
+    </div>
+    <div class="theory-card" style="border-color:#93c5fd">
+      <div class="theory-icon">📐</div>
+      <div class="theory-label" style="color:#1e40af">C — Constraint</div>
+      <div class="theory-name">제약 조건</div>
+      <div class="theory-desc">분량, 형식, 말투, 금지 표현, 반드시 포함할 키워드 등을 구체적으로 지정합니다. AI의 가드레일입니다.</div>
+    </div>
+    <div class="theory-card" style="border-color:#c4b5fd">
+      <div class="theory-icon">💡</div>
+      <div class="theory-label" style="color:#5b21b6">FS — Few-shot</div>
+      <div class="theory-name">예시 학습</div>
+      <div class="theory-desc">원하는 결과물 샘플을 1~2개 보여주는 기술. "이런 스타일로"라는 설명보다 예시 1개가 10배 정확합니다.</div>
+    </div>
+  </div>
+
+  <div class="compare-wrap">
+    <div class="compare-title">⚡ 5단계 업그레이드 로드맵</div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>단계</th>
+          <th>전략명</th>
+          <th>사용 기술</th>
+          <th>결과물 품질</th>
+          <th>수정 횟수</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="lv-chip chip1">Lv.1</span></td>
+          <td><strong>제로샷</strong><br><span style="font-size:13px;color:#666">그냥 던지기</span></td>
+          <td><span class="tech-tag">없음</span></td>
+          <td><div class="quality-bar-wrap"><div class="quality-bar"><div class="quality-fill" style="width:10%;background:#dc2626"></div></div><span style="color:#dc2626;font-size:13px;font-weight:700">매우 낮음</span></div></td>
+          <td style="color:#dc2626;font-weight:700">5회 이상</td>
+        </tr>
+        <tr>
+          <td><span class="lv-chip chip2">Lv.2</span></td>
+          <td><strong>역할 지정</strong><br><span style="font-size:13px;color:#666">P 추가</span></td>
+          <td><span class="tech-tag">Persona</span></td>
+          <td><div class="quality-bar-wrap"><div class="quality-bar"><div class="quality-fill" style="width:28%;background:#ea580c"></div></div><span style="color:#ea580c;font-size:13px;font-weight:700">낮음</span></div></td>
+          <td style="color:#ea580c;font-weight:700">4회</td>
+        </tr>
+        <tr>
+          <td><span class="lv-chip chip3">Lv.3</span></td>
+          <td><strong>P-T 조합</strong><br><span style="font-size:13px;color:#666">역할 + 임무</span></td>
+          <td><span class="tech-tag">P</span> <span class="tech-tag">T</span></td>
+          <td><div class="quality-bar-wrap"><div class="quality-bar"><div class="quality-fill" style="width:50%;background:#d97706"></div></div><span style="color:#d97706;font-size:13px;font-weight:700">보통</span></div></td>
+          <td style="color:#d97706;font-weight:700">3회</td>
+        </tr>
+        <tr>
+          <td><span class="lv-chip chip4">Lv.4</span></td>
+          <td><strong>P-C-T-C 완성형</strong><br><span style="font-size:13px;color:#666">4요소 전부</span></td>
+          <td><span class="tech-tag">P</span> <span class="tech-tag">C</span> <span class="tech-tag">T</span> <span class="tech-tag">C</span></td>
+          <td><div class="quality-bar-wrap"><div class="quality-bar"><div class="quality-fill" style="width:78%;background:#059669"></div></div><span style="color:#059669;font-size:13px;font-weight:700">높음</span></div></td>
+          <td style="color:#059669;font-weight:700">1회</td>
+        </tr>
+        <tr>
+          <td><span class="lv-chip chip5">Lv.5</span></td>
+          <td><strong>마스터 프롬프트</strong><br><span style="font-size:13px;color:#666">P-C-T-C + 예시</span></td>
+          <td><span class="tech-tag">P</span> <span class="tech-tag">C</span> <span class="tech-tag">T</span> <span class="tech-tag">C</span> <span class="tech-tag">FS</span></td>
+          <td><div class="quality-bar-wrap"><div class="quality-bar"><div class="quality-fill" style="width:98%;background:#1a6ef5"></div></div><span style="color:#1a6ef5;font-size:13px;font-weight:700">최고</span></div></td>
+          <td style="color:#1a6ef5;font-weight:700">0~1회</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ========================
+     TAB: JOB — 취업희망자
+     ======================== -->
+<section class="section" id="tab-job">
+  <div class="section-header">
+    <div class="audience-badge badge-job">💼 취업희망자</div>
+    <div class="section-title">이력서부터 면접까지 — AI로 취업 경쟁력 높이기</div>
+    <div class="section-desc">자기소개서 지원동기 작성을 통해 Lv.1 → Lv.5 업그레이드를 직접 경험해봅니다.</div>
+  </div>
+
+  <div class="scenario-box">
+    <div class="scenario-label">📋 실습 시나리오</div>
+    <div class="scenario-text">마케팅 직무를 희망하는 <strong>김지원(27세)</strong>은 경영학을 전공하고 대학 마케팅 동아리에서 인스타그램을 운영(팔로워 3,000 → 12,000 성장)한 경험이 있습니다. 지원 회사는 친환경 브랜드 <strong>㈜그린라이프</strong>이며, 자기소개서 항목은 <strong>"지원동기와 입사 후 포부"(700자 이내)</strong>입니다.</div>
+  </div>
+
+  <div class="levels-grid">
+
+    <!-- LV1 -->
+    <div class="level-card lv1" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.1</div>
+        <div class="level-meta">
+          <div class="level-name">🔴 제로샷 — 그냥 던지기</div>
+          <div class="level-tech"><span class="tech-tag">기술 없음</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#dc2626">★☆☆☆☆</div>
+          <div class="revision-hint">수정 5회 이상</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-bad">
+          <div class="problem-title">❌ 왜 나쁜가?</div>
+          <ul class="problem-list">
+            <li>AI가 지원자의 전공, 경험, 회사명을 전혀 모름</li>
+            <li>인터넷에서 긁어온 뻔한 자소서 내용이 나옴</li>
+            <li>"열정", "도전", "성장"으로 가득 찬 무의미한 문장 생성</li>
+          </ul>
+        </div>
+        <div class="prompt-label">❌ 나쁜 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="nc">마케팅 회사 자기소개서 지원동기 써줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LV2 -->
+    <div class="level-card lv2" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.2</div>
+        <div class="level-meta">
+          <div class="level-name">🟠 역할 지정 — P(역할)만 추가</div>
+          <div class="level-tech"><span class="tech-tag">Persona(역할)</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#ea580c">★★☆☆☆</div>
+          <div class="revision-hint">수정 4회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-warn">
+          <div class="problem-title">⚠️ 개선됐지만 여전히 부족</div>
+          <ul class="problem-list">
+            <li>역할은 줬지만 지원자의 실제 정보가 없어 일반적 답변이 나옴</li>
+            <li>어떤 회사인지, 어떤 경험을 강조해야 할지 AI가 추측해야 함</li>
+          </ul>
+        </div>
+        <div class="prompt-label">⚠️ 조금 나아진 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">너는 10년 경력의 취업 컨설턴트야.</span>
+
+마케팅 회사 자기소개서의 지원동기와 입사 후 포부를 써줘.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LV3 -->
+    <div class="level-card lv3" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.3</div>
+        <div class="level-meta">
+          <div class="level-name">🟡 P-T 조합 — 역할 + 임무</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Task</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#d97706">★★★☆☆</div>
+          <div class="revision-hint">수정 3회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-warn">
+          <div class="problem-title">⚠️ 방향은 맞지만 맥락이 빠짐</div>
+          <ul class="problem-list">
+            <li>역할과 임무는 명확하지만 지원자의 실제 경험이 없음</li>
+            <li>회사의 특징, 직무 핵심을 AI가 임의로 만들어냄 (환각 위험)</li>
+          </ul>
+        </div>
+        <div class="prompt-label">🔶 보통 수준의 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">너는 10년 경력의 취업 컨설턴트야.</span>
+
+<span class="tc">경영학 전공, SNS 운영 경험이 있는 27세 취업희망자의
+마케팅 직무 자기소개서에서 '지원동기와 입사 후 포부' 초안을 작성해줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LV4 -->
+    <div class="level-card lv4 open" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.4</div>
+        <div class="level-meta">
+          <div class="level-name">🟢 P-C-T-C 완성형 — 4요소 완전 결합</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Context</span> <span class="tech-tag">Task</span> <span class="tech-tag">Constraint</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#059669">★★★★☆</div>
+          <div class="revision-hint">수정 1회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-ok">
+          <div class="problem-title">✅ 왜 좋은가?</div>
+          <ul class="problem-list">
+            <li>4가지 요소가 모두 있어 AI가 추측할 것이 거의 없음</li>
+            <li>실제 경험(수치 포함)을 넣어 개인화된 자소서가 나옴</li>
+            <li>분량·형식·금지어까지 지정해 바로 제출 가능한 수준의 초안이 나옴</li>
+          </ul>
+        </div>
+        <div class="prompt-label">✅ 좋은 프롬프트 (P-C-T-C)</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">① 역할 (P)
+너는 대기업 인사팀 출신 10년 경력의 취업 컨설턴트야.
+지원자의 강점을 살리면서 진정성 있는 자소서를 쓰는 전문가야.</span>
+
+<span class="cc">② 배경 (C)
+지원자 정보는 아래와 같아.
+- 이름: 김지원 (27세)
+- 전공: 경영학 (마케팅 부전공)
+- 주요 경험: 대학 마케팅 동아리에서 2년간 인스타그램 운영
+  (팔로워 3,000 → 12,000명으로 성장시킴)
+- 지원 회사: ㈜그린라이프 (친환경 라이프스타일 브랜드)
+- 지원 직무: 디지털 마케팅 (SNS · 콘텐츠 기획)</span>
+
+<span class="tc">③ 임무 (T)
+위 정보를 바탕으로 자기소개서 '지원동기와 입사 후 포부'
+항목의 초안을 작성해줘.</span>
+
+<span class="fc">④ 조건 (C)
+- 분량: 650~700자 이내
+- 말투: 진솔하고 구체적, 과장 금지
+- 동아리 SNS 성장 수치(3,000→12,000)를 반드시 포함할 것
+- "열정", "도전", "성장" 같은 진부한 단어는 사용하지 말 것
+- 입사 후 3년 내 목표를 구체적으로 언급할 것</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LV5 -->
+    <div class="level-card lv5" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.5</div>
+        <div class="level-meta">
+          <div class="level-name">🔵 마스터 — P-C-T-C + 예시(Few-shot)</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Context</span> <span class="tech-tag">Task</span> <span class="tech-tag">Constraint</span> <span class="tech-tag">Few-shot</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#1a6ef5">★★★★★</div>
+          <div class="revision-hint">수정 0~1회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-ok">
+          <div class="problem-title">🏆 Lv.4보다 강력한 이유</div>
+          <ul class="problem-list">
+            <li>내가 원하는 문체와 구조를 직접 샘플로 보여줌</li>
+            <li>AI가 말투·문장 길이·시작 방식까지 패턴으로 학습함</li>
+            <li>첫 번째 결과물이 곧바로 제출 가능한 수준이 됨</li>
+          </ul>
+        </div>
+        <div class="prompt-label">🏆 마스터 프롬프트 (P-C-T-C + Few-shot)</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">① 역할 (P): 대기업 인사팀 출신 10년 경력 취업 컨설턴트</span>
+<span class="cc">② 배경 (C): 김지원(27세), 경영학 전공, 동아리 SNS 팔로워 3,000→12,000
+   지원: ㈜그린라이프 / 디지털 마케팅</span>
+<span class="tc">③ 임무 (T): '지원동기와 입사 후 포부' 자소서 초안 작성</span>
+<span class="fc">④ 조건 (C): 700자 이내, 수치 포함, 진부한 단어 금지</span>
+
+<span class="sc">⑤ 스타일 예시 (Few-shot)
+[내가 원하는 문체 예시야 — 이 스타일을 학습해줘]
+
+"처음 동아리 SNS를 맡았을 때, 팔로워는 3,000명이었습니다.
+저는 숫자를 바꾸기 위해 데이터를 분석했습니다.
+게시 시간, 해시태그, 썸네일 색상까지 하나씩 테스트했고,
+6개월 만에 12,000명이 됐습니다."
+
+→ 특징: 짧은 문장, 구체적 행동 동사, 수치로 증명, 미사여구 없음
+
+이제 위 스타일 그대로 지원동기와 포부 전체를 완성해줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========================
+     TAB: BIZ — 자영업자
+     ======================== -->
+<section class="section" id="tab-biz">
+  <div class="section-header">
+    <div class="audience-badge badge-biz">🏪 자영업자</div>
+    <div class="section-title">매출을 올리는 AI — SNS 홍보글 완성하기</div>
+    <div class="section-desc">신메뉴 인스타그램 홍보 게시글을 통해 Lv.1 → Lv.5 업그레이드를 직접 경험해봅니다.</div>
+  </div>
+
+  <div class="scenario-box">
+    <div class="scenario-label">📋 실습 시나리오</div>
+    <div class="scenario-text">부산 해운대에서 수제 버거 가게 <strong>'버거퀸즈'</strong>를 운영하는 박사장님은 여름 시즌을 앞두고 <strong>인스타그램에 신메뉴 홍보 게시글</strong>을 써야 합니다. 신메뉴는 <strong>'바다향 랍스터 버거'</strong>(18,900원)이고, 주요 고객은 20~30대 커플과 관광객입니다.</div>
+  </div>
+
+  <div class="levels-grid">
+
+    <div class="level-card lv1" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.1</div>
+        <div class="level-meta">
+          <div class="level-name">🔴 제로샷 — 그냥 던지기</div>
+          <div class="level-tech"><span class="tech-tag">기술 없음</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#dc2626">★☆☆☆☆</div>
+          <div class="revision-hint">수정 5회 이상</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-bad">
+          <div class="problem-title">❌ 왜 나쁜가?</div>
+          <ul class="problem-list">
+            <li>가게 이름, 위치, 가격, 타겟 고객을 AI가 전혀 모름</li>
+            <li>"맛있는 버거! 많이 드세요!" 수준의 뻔한 홍보 문구가 나옴</li>
+            <li>우리 가게만의 개성이 전혀 없는 결과물</li>
+          </ul>
+        </div>
+        <div class="prompt-label">❌ 나쁜 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="nc">신메뉴 버거 인스타 홍보 글 써줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-card lv2" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.2</div>
+        <div class="level-meta">
+          <div class="level-name">🟠 메뉴 정보 추가</div>
+          <div class="level-tech"><span class="tech-tag">Task</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#ea580c">★★☆☆☆</div>
+          <div class="revision-hint">수정 4회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-warn">
+          <div class="problem-title">⚠️ 메뉴는 알지만 맥락이 없음</div>
+          <ul class="problem-list">
+            <li>어느 가게인지, 누가 타겟인지, 어떤 톤인지 여전히 모름</li>
+            <li>일반적인 맛집 홍보글 수준에 그침</li>
+          </ul>
+        </div>
+        <div class="prompt-label">⚠️ 조금 나아진 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content">'바다향 랍스터 버거' 신메뉴 인스타그램 홍보 글 써줘.
+가격은 18,900원이야.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-card lv3" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.3</div>
+        <div class="level-meta">
+          <div class="level-name">🟡 P-T 조합 — 역할 + 상황</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Task</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#d97706">★★★☆☆</div>
+          <div class="revision-hint">수정 2~3회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="prompt-label">🔶 보통 수준의 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">너는 SNS 마케팅 전문가야.</span>
+
+<span class="tc">수제 버거 가게의 신메뉴 '바다향 랍스터 버거'(18,900원) 출시
+인스타그램 게시글을 여름 시즌 분위기로 써줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-card lv4 open" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.4</div>
+        <div class="level-meta">
+          <div class="level-name">🟢 P-C-T-C 완성형</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Context</span> <span class="tech-tag">Task</span> <span class="tech-tag">Constraint</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#059669">★★★★☆</div>
+          <div class="revision-hint">수정 1회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-ok">
+          <div class="problem-title">✅ 왜 좋은가?</div>
+          <ul class="problem-list">
+            <li>가게의 정체성과 위치, 타겟 고객이 명확해짐</li>
+            <li>해시태그, 이모지 포함 여부까지 지정해 바로 붙여넣기 가능</li>
+            <li>고객이 실제로 반응하는 문구가 나올 가능성이 높음</li>
+          </ul>
+        </div>
+        <div class="prompt-label">✅ 좋은 프롬프트 (P-C-T-C)</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">① 역할 (P)
+너는 F&B 브랜드 전문 SNS 마케터야.
+작은 가게가 대형 브랜드처럼 보이게 만드는 글쓰기 전문가야.</span>
+
+<span class="cc">② 배경 (C)
+- 가게: 부산 해운대의 수제 버거 가게 '버거퀸즈'
+- 주요 고객: 20~30대 커플, 가족 단위 관광객
+- SNS 팔로워: 약 2,300명
+- 평소 톤: 친근하고 유머러스한 감성</span>
+
+<span class="tc">③ 임무 (T)
+여름 신메뉴 '바다향 랍스터 버거'(18,900원) 출시를 알리는
+인스타그램 피드 게시글 초안을 작성해줘.</span>
+
+<span class="fc">④ 조건 (C)
+- 글자 수: 캡션 200자 이내
+- 여름 바다 분위기가 느껴지는 문장으로 시작할 것
+- 가격(18,900원)을 자연스럽게 포함할 것
+- 해시태그 8~10개 포함 (#해운대맛집 필수)
+- 이모지 3~5개 사용 (🦞🌊🍔 활용 권장)
+- "맛있어요", "꼭 드세요" 같은 진부한 표현 금지</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-card lv5" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.5</div>
+        <div class="level-meta">
+          <div class="level-name">🔵 마스터 — 기존 게시글 스타일 학습</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Context</span> <span class="tech-tag">Task</span> <span class="tech-tag">Constraint</span> <span class="tech-tag">Few-shot</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#1a6ef5">★★★★★</div>
+          <div class="revision-hint">수정 0~1회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-ok">
+          <div class="problem-title">🏆 핵심 포인트</div>
+          <ul class="problem-list">
+            <li>기존에 잘 됐던 내 게시글 2개를 예시로 제공</li>
+            <li>AI가 우리 가게만의 말투와 감성을 정확히 재현함</li>
+            <li>팔로워가 "역시 버거퀸즈다"라고 느끼는 일관성이 생김</li>
+          </ul>
+        </div>
+        <div class="prompt-label">🏆 마스터 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">① 역할 (P): F&B SNS 마케터</span>
+<span class="cc">② 배경 (C): 부산 해운대 수제버거 '버거퀸즈' / 20~30대 / 친근+유머러스</span>
+<span class="tc">③ 임무 (T): '바다향 랍스터 버거'(18,900원) 인스타 게시글 작성</span>
+<span class="fc">④ 조건 (C): 200자 이내, 해시태그 8~10개, 이모지 포함</span>
+
+<span class="sc">⑤ 스타일 예시 (Few-shot)
+[우리 가게 기존 인기 게시글이야 — 이 스타일 그대로 학습해줘]
+
+[예시 1 — 좋아요 340개]
+비가 와도 해운대 갈 이유는 있다. 🌧️
+치즈가 세 겹이면 우산 없어도 따뜻해 🧀
+클래식 스모키 버거 단독 입고 완료.
+오늘 하루도 버거로 버텨봅시다 🍔
+#해운대맛집 #수제버거 #버거퀸즈
+
+[예시 2 — 좋아요 280개]
+주말 11시, 아직 웨이팅 없음 🫡
+이게 기회다 싶으면 오시면 됩니다.
+오늘만 할인하는 건 아무것도 없지만
+맛은 매일 할인 없이 최선입니다 🔥
+#부산버거 #해운대 #버거맛집
+
+이제 이 스타일 그대로 랍스터 버거 게시글을 새로 써줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========================
+     TAB: WORKER — 직장인
+     ======================== -->
+<section class="section" id="tab-worker">
+  <div class="section-header">
+    <div class="audience-badge badge-worker">🧑‍💻 직장인</div>
+    <div class="section-title">업무 생산성 10배 — 협력사 이메일 단번에 끝내기</div>
+    <div class="section-desc">비즈니스 이메일 작성을 통해 Lv.1 → Lv.5 업그레이드를 직접 경험해봅니다.</div>
+  </div>
+
+  <div class="scenario-box">
+    <div class="scenario-label">📋 실습 시나리오</div>
+    <div class="scenario-text">IT 서비스 기획팀 <strong>이대리(31세)</strong>는 팀장의 지시를 받았습니다. <em>"다음 주까지 협력사 ABC솔루션에 API 연동 일정 조율 메일 보내줘. 우리가 원하는 완료 일정은 <strong>7월 1일</strong>까지야."</em> 이대리는 AI를 열었습니다.</div>
+  </div>
+
+  <div class="levels-grid">
+
+    <div class="level-card lv1" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.1</div>
+        <div class="level-meta">
+          <div class="level-name">🔴 제로샷 — 그냥 던지기</div>
+          <div class="level-tech"><span class="tech-tag">기술 없음</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#dc2626">★☆☆☆☆</div>
+          <div class="revision-hint">수정 5회 이상</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-bad">
+          <div class="problem-title">❌ 왜 나쁜가?</div>
+          <ul class="problem-list">
+            <li>회사 이름, 프로젝트 내용, 담당자 이름을 AI가 모름</li>
+            <li>"안녕하세요, 협력을 부탁드립니다" 수준의 내용이 나옴</li>
+            <li>실제 발송하려면 처음부터 다시 써야 함</li>
+          </ul>
+        </div>
+        <div class="prompt-label">❌ 나쁜 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="nc">협력사에 API 연동 일정 조율 이메일 써줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-card lv2" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.2</div>
+        <div class="level-meta">
+          <div class="level-name">🟠 기본 정보 추가</div>
+          <div class="level-tech"><span class="tech-tag">Task</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#ea580c">★★☆☆☆</div>
+          <div class="revision-hint">수정 4회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-warn">
+          <div class="problem-title">⚠️ 기본 정보는 있지만 여전히 부족</div>
+          <ul class="problem-list">
+            <li>담당자 이름, 프로젝트 배경, 어조를 AI가 추측해야 함</li>
+            <li>실무에 바로 쓰기엔 어색한 이메일이 나옴</li>
+          </ul>
+        </div>
+        <div class="prompt-label">⚠️ 조금 나아진 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content">ABC솔루션에 API 연동 일정 조율 이메일 써줘.
+우리가 원하는 일정은 7월 1일까지야.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-card lv3" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.3</div>
+        <div class="level-meta">
+          <div class="level-name">🟡 P-T 조합 — 역할 + 임무</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Task</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#d97706">★★★☆☆</div>
+          <div class="revision-hint">수정 3회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="prompt-label">🔶 보통 수준의 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">너는 IT 기업의 프로젝트 매니저야.</span>
+
+<span class="tc">협력사 ABC솔루션 개발팀장에게 API 연동 일정을
+7월 1일로 확정 요청하는 비즈니스 이메일을 작성해줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-card lv4 open" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.4</div>
+        <div class="level-meta">
+          <div class="level-name">🟢 P-C-T-C 완성형</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Context</span> <span class="tech-tag">Task</span> <span class="tech-tag">Constraint</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#059669">★★★★☆</div>
+          <div class="revision-hint">수정 1회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-ok">
+          <div class="problem-title">✅ 왜 좋은가?</div>
+          <ul class="problem-list">
+            <li>프로젝트 배경, 담당자 이름, 회사 관계까지 명시</li>
+            <li>이메일 제목, 형식, 어조까지 지정해 바로 발송 가능한 수준</li>
+            <li>협력사와의 관계를 고려한 적절한 어조가 나옴</li>
+          </ul>
+        </div>
+        <div class="prompt-label">✅ 좋은 프롬프트 (P-C-T-C)</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">① 역할 (P)
+너는 IT 서비스 기업 기획팀의 시니어 PM이야.
+협력사와 원활한 커뮤니케이션을 잘 하는 전문가야.</span>
+
+<span class="cc">② 배경 (C)
+- 우리 회사: ㈜테크브릿지 (기획팀 이대리)
+- 협력사: ㈜ABC솔루션 (개발팀장 최민준 부장)
+- 프로젝트: 결제 API 연동 개발 (신규 앱 출시 연계)
+- 상황: 지난주 킥오프 미팅 이후 첫 공식 일정 조율 연락
+- 관계: 파트너십 중시 (갑을 관계 아님)</span>
+
+<span class="tc">③ 임무 (T)
+결제 API 연동 개발 완료 목표 일정을 7월 1일로 요청하는
+공식 비즈니스 이메일 초안을 작성해줘.</span>
+
+<span class="fc">④ 조건 (C)
+- 이메일 제목도 함께 작성할 것
+- 정중하되 명확한 비즈니스 어조
+- 일정 조율을 '요청'하는 형태 (강요하지 말 것)
+- 회신 요청 기한(이번 주 금요일 6/13)을 자연스럽게 포함
+- 문의 연락처는 [담당자 정보] 형식으로 placeholder 처리
+- A4 반 페이지 이내의 간결한 분량</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-card lv5" onclick="toggleCard(this,event)">
+      <div class="level-header">
+        <div class="level-badge">Lv.5</div>
+        <div class="level-meta">
+          <div class="level-name">🔵 마스터 — 우리 팀 이메일 스타일 학습</div>
+          <div class="level-tech"><span class="tech-tag">Persona</span> <span class="tech-tag">Context</span> <span class="tech-tag">Task</span> <span class="tech-tag">Constraint</span> <span class="tech-tag">Few-shot</span></div>
+        </div>
+        <div class="level-rating">
+          <div class="stars" style="color:#1a6ef5">★★★★★</div>
+          <div class="revision-hint">수정 0~1회</div>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="level-body">
+        <div class="problem-box problem-ok">
+          <div class="problem-title">🏆 핵심 포인트</div>
+          <ul class="problem-list">
+            <li>우리 팀 실제 이메일 스타일을 예시로 제공</li>
+            <li>팀장이 보기에 "이대리가 직접 쓴 것 같은" 결과물이 나옴</li>
+            <li>회사 커뮤니케이션 스타일을 그대로 유지한 이메일이 완성됨</li>
+          </ul>
+        </div>
+        <div class="prompt-label">🏆 마스터 프롬프트</div>
+        <div class="prompt-box">
+          <div class="prompt-topbar">
+            <div class="prompt-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <span class="prompt-lang">프롬프트 입력창</span>
+            <button class="copy-btn" onclick="copyPrompt(this)">📋 복사</button>
+          </div>
+          <div class="prompt-content"><span class="pc">① 역할 (P): IT 기업 기획팀 시니어 PM</span>
+<span class="cc">② 배경 (C): ㈜테크브릿지 이대리 → ㈜ABC솔루션 최민준 부장
+   결제 API 연동 / 파트너십 관계</span>
+<span class="tc">③ 임무 (T): 7월 1일 완료 목표 일정 요청 이메일 작성</span>
+<span class="fc">④ 조건 (C): 제목 포함, 정중+명확, 6/13 회신 요청, 반 페이지 이내</span>
+
+<span class="sc">⑤ 스타일 예시 (Few-shot)
+[우리 팀이 실제로 보낸 이메일 스타일이야 — 학습해줘]
+
+제목: [테크브릿지] 2차 검토 의견 공유 및 미팅 일정 요청 건
+---
+최 부장님, 안녕하세요.
+㈜테크브릿지 기획팀 이대리입니다.
+
+지난 5월 27일 킥오프 이후 내부 검토를 완료하였습니다.
+관련하여 아래 내용을 공유드리오니 확인 부탁드립니다.
+
+■ 공유 사항
+- 1차 화면 설계안 첨부 (별첨)
+- 추가 협의 필요 항목 3건
+
+가능하시면 이번 주 내로 30분 미팅 부탁드려도 될까요?
+일정은 편하신 시간으로 말씀해 주시면 조율하겠습니다.
+
+바쁘신 중에 감사드립니다.
+이대리 드림 | [연락처]
+---
+
+이 스타일 그대로 결제 API 연동 일정(7월 1일) 요청
+이메일을 새로 작성해줘.</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========================
+     TAB: COMPARE
+     ======================== -->
+<section class="section" id="tab-compare">
+  <div class="section-header">
+    <div class="section-title">📊 3가지 대상 × 5단계 전체 비교표</div>
+    <div class="section-desc">한눈에 보는 프롬프트 업그레이드 완성 로드맵입니다.</div>
+  </div>
+
+  <div class="compare-wrap">
+    <div class="compare-title">💼 취업희망자 — 자기소개서 지원동기 작성</div>
+    <table class="compare-table">
+      <thead><tr><th>단계</th><th>프롬프트 핵심</th><th>기술</th><th>예상 결과물</th><th>품질</th></tr></thead>
+      <tbody>
+        <tr><td><span class="lv-chip chip1">Lv.1</span></td><td>마케팅 회사 자소서 써줘</td><td><span class="tech-tag">없음</span></td><td>인터넷 짜깁기 문장</td><td style="color:#dc2626;font-weight:700">★☆☆☆☆</td></tr>
+        <tr><td><span class="lv-chip chip2">Lv.2</span></td><td>취업 컨설턴트 역할 지정</td><td><span class="tech-tag">P</span></td><td>일반적 자소서 샘플</td><td style="color:#ea580c;font-weight:700">★★☆☆☆</td></tr>
+        <tr><td><span class="lv-chip chip3">Lv.3</span></td><td>역할 + 전공·경험 + 임무</td><td><span class="tech-tag">P</span><span class="tech-tag">T</span></td><td>맥락 있지만 뻔한 문장</td><td style="color:#d97706;font-weight:700">★★★☆☆</td></tr>
+        <tr><td><span class="lv-chip chip4">Lv.4</span></td><td>P-C-T-C 4요소 완성 + 수치·금지어</td><td><span class="tech-tag">PCTC</span></td><td>개인화된 제출 가능 초안</td><td style="color:#059669;font-weight:700">★★★★☆</td></tr>
+        <tr><td><span class="lv-chip chip5">Lv.5</span></td><td>+ 원하는 문체 샘플 제공</td><td><span class="tech-tag">PCTC+FS</span></td><td>즉시 제출 가능한 완성본</td><td style="color:#1a6ef5;font-weight:700">★★★★★</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="compare-wrap">
+    <div class="compare-title">🏪 자영업자 — 인스타그램 신메뉴 홍보 게시글</div>
+    <table class="compare-table">
+      <thead><tr><th>단계</th><th>프롬프트 핵심</th><th>기술</th><th>예상 결과물</th><th>품질</th></tr></thead>
+      <tbody>
+        <tr><td><span class="lv-chip chip1">Lv.1</span></td><td>신메뉴 인스타 글 써줘</td><td><span class="tech-tag">없음</span></td><td>뻔한 홍보 문구</td><td style="color:#dc2626;font-weight:700">★☆☆☆☆</td></tr>
+        <tr><td><span class="lv-chip chip2">Lv.2</span></td><td>메뉴명 + 가격 추가</td><td><span class="tech-tag">T</span></td><td>일반 맛집 홍보 수준</td><td style="color:#ea580c;font-weight:700">★★☆☆☆</td></tr>
+        <tr><td><span class="lv-chip chip3">Lv.3</span></td><td>SNS 마케터 역할 + 시즌감</td><td><span class="tech-tag">P</span><span class="tech-tag">T</span></td><td>그럴듯하지만 내 가게 아님</td><td style="color:#d97706;font-weight:700">★★★☆☆</td></tr>
+        <tr><td><span class="lv-chip chip4">Lv.4</span></td><td>가게 정체성·타겟·금지어·해시태그 지정</td><td><span class="tech-tag">PCTC</span></td><td>바로 올릴 수 있는 게시글</td><td style="color:#059669;font-weight:700">★★★★☆</td></tr>
+        <tr><td><span class="lv-chip chip5">Lv.5</span></td><td>+ 기존 인기 게시글 2개 예시 제공</td><td><span class="tech-tag">PCTC+FS</span></td><td>우리 가게 스타일 완벽 재현</td><td style="color:#1a6ef5;font-weight:700">★★★★★</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="compare-wrap">
+    <div class="compare-title">🧑‍💻 직장인 — 협력사 일정 조율 비즈니스 이메일</div>
+    <table class="compare-table">
+      <thead><tr><th>단계</th><th>프롬프트 핵심</th><th>기술</th><th>예상 결과물</th><th>품질</th></tr></thead>
+      <tbody>
+        <tr><td><span class="lv-chip chip1">Lv.1</span></td><td>협력사 이메일 써줘</td><td><span class="tech-tag">없음</span></td><td>형식만 있는 빈 껍데기</td><td style="color:#dc2626;font-weight:700">★☆☆☆☆</td></tr>
+        <tr><td><span class="lv-chip chip2">Lv.2</span></td><td>회사명 + 일정(7/1) 추가</td><td><span class="tech-tag">T</span></td><td>기본 정보는 있지만 어색함</td><td style="color:#ea580c;font-weight:700">★★☆☆☆</td></tr>
+        <tr><td><span class="lv-chip chip3">Lv.3</span></td><td>PM 역할 + 수신자 + 요청 사항</td><td><span class="tech-tag">P</span><span class="tech-tag">T</span></td><td>사용 가능하지만 개성 없음</td><td style="color:#d97706;font-weight:700">★★★☆☆</td></tr>
+        <tr><td><span class="lv-chip chip4">Lv.4</span></td><td>프로젝트 배경·관계·회신기한·형식 지정</td><td><span class="tech-tag">PCTC</span></td><td>바로 발송 가능한 이메일</td><td style="color:#059669;font-weight:700">★★★★☆</td></tr>
+        <tr><td><span class="lv-chip chip5">Lv.5</span></td><td>+ 우리 팀 실제 이메일 예시 제공</td><td><span class="tech-tag">PCTC+FS</span></td><td>"내가 쓴 것 같은" 완성본</td><td style="color:#1a6ef5;font-weight:700">★★★★★</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight-grid">
+    <div style="font-size:18px;font-weight:900;color:#111;margin-bottom:4px">💡 핵심 인사이트 3가지</div>
+    <div class="insight-card" style="border-left-color:#059669">
+      <strong>① Lv.4의 핵심은 '조건(C)'이다</strong>
+      <p>역할·배경·임무가 있어도 형식·분량·금지어를 지정하지 않으면 AI는 자유롭게 채워 넣습니다. 제약 조건이 결과물을 통제하는 '가드레일'입니다.</p>
+    </div>
+    <div class="insight-card" style="border-left-color:#1a6ef5">
+      <strong>② Lv.5의 힘은 '설명 → 보여주기' 전환이다</strong>
+      <p>"친근한 톤으로 써줘"(설명)보다 실제 예시 1개(보여주기)가 10배 정확합니다. <em style="color:#1a6ef5;font-style:normal;font-weight:700">Show, don't tell</em> — AI에게도 그대로 적용됩니다.</p
